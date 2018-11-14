@@ -1,0 +1,127 @@
+#\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+#This is the Riemman sum applied for a function which is previously defined by expression
+#It takes as an input the lower limit a, upper limit b and step size.
+Riem <- function(expres,a,b,dx){
+  #Create our vector to evaluate.
+  x= seq(a,b-dx,by=dx)
+  #Evualuate for all the given points, giving the height of rectangles
+  y=eval(expres)
+  #sum all the areas
+  y=sum(y*dx)
+  #return the value
+  return(y)
+}
+
+#Riemman sum applied for a function defined in x and y.
+#It takes as an input the limits, respective step sizes and the function.
+Riem3d<- function(expres,ax,bx,dx,ay,by,dy){
+  #We create our vectors for y and x.
+  x=seq(ax,bx-dx,by=dx)
+  l=seq(ay,by-dy,by=dy)
+  #We create an extra dummy vector to store additional values in the loop.
+  s=1:length(x)
+  for(i in 1:length(x)){
+   #Select one value of y
+   y=l[i] 
+   #Evaluate the expression for all x but only 1 y.
+   c=eval(expres)
+   #Add The corresponding area for this y
+   s[i]=sum(c*dx)  
+  }
+  #We finally multiply those line segments by a delta y in order to turn it into a volume and add.
+  Val=sum(s*dy)
+  return(Val)
+}
+
+
+#\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+#This function runs montecarlo for 2d cases, as an input we insert the expression, the limits and number of points.
+Monte <- function(expres,a,b,n){
+  #Generate random numbers
+  x=runif(n,a,b)
+  #We get the average height of the function and multiply it by the interval length.
+  Int=(b-a)*sum(eval(expres))/length(eval(expres))
+  return(Int)
+}
+
+
+#This function returns montecarlo for 3d cases, same as before except we add the limits for y.
+Monte3d <-function(expres,ax,bx,ay,by,n){
+  #Generate random values
+  x=runif(n,ax,bx)
+  y=runif(n,ay,by)
+  #Average height of the function times the interval
+  Int=(bx-ax)*(by-ay)*sum(eval(expres))/length(eval(expres))
+  return(Int)
+}
+
+
+#\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+#Surface area sphere
+
+#Function to get the surface area of a sphere
+sphere <- function(r,n){
+#Generate values for the radius.
+Rx=runif(n,0,r)
+Ry=runif(n,0,r)
+Rz=runif(n,0,r)
+#Choose the index that will filter the points that fall in the sphere range, we choose a range of 1 to make calculations easier.
+index=which(Rx^2+Ry^2+Rz^2<(r+0.5)^2 & Rx^2+Ry^2+Rz^2>(r-0.5)^2)
+#We finally calculate the volume of a spherical shell of unit thickness. We divide by 1 and recover the surface area.
+Area=8*r^3*(length(index))/(length(Rx))
+return(Area)
+}
+
+#///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+#This function evaluates the second derivative at a point p
+sod <- function(expres,p,h){
+  #Create vector of x
+  x= seq(p-h,p+h,by=h)
+  #Evaluate the function
+  fun=eval(expres)
+  #Evaluate the second central derivative
+  ypp=(fun[3]-2*fun[2]+fun[1])/(h^2)
+  #Return value
+  return(ypp)
+}
+#This one returns the second derivative for a set of points of range a-b using a step size h.
+sodin<- function(expres,a,b,h){
+  #Create vector of x
+  x= seq(a-h,b+h,by=h)
+  #Evaluate the function
+  fun=eval(expres)
+  #Evaluate the second central derivative for a range
+  ypp=(fun[1:(length(x)-2)]-2*fun[2:(length(x)-1)]+fun[3:(length(x))])/(h^2)
+  return(ypp)
+}
+
+#\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+#Homework problems solved
+
+#e^(x+x^2) from -2 to 2
+
+F1=expression(exp(x+x^2))
+#Riemman
+Riem(F1,-2,2,0.01)
+#Montecarlo
+Monte(F1,-2,2,100000)
+
+#e^((x+y)^2) from 0 to 1 on both variables
+
+F2=expression(exp((x+y)^2))
+#Riemman sum
+Riem3d(F2,0,1,0.001,0,1,0.001)
+#Montecarlo
+Monte3d(F2,0,1,0,1,100000)
+
+#Surface area of a sphere
+sphere(10,100000)
+
+#Second derivative of sin(x)
+F3=expression(sin(x))
+y=sodin(F3,0,2*pi,0.2)
+x=seq(0,2*pi,by=0.2)
+plot(x,-eval(F3),col="green")
+points(x,y,type="l",col="red")
